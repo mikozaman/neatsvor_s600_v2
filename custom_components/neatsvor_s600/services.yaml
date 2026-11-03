@@ -1,0 +1,49 @@
+clean_rooms:
+  name: Nettoyer des pièces
+  description: >-
+    Lance un nettoyage ciblé sur une ou plusieurs pièces, avec niveaux
+    d'aspiration et de lavage. NON VALIDÉ EN CONDITIONS RÉELLES : la
+    plage exacte des niveaux (1-3 supposé) et les IDs de pièces réels
+    (à récupérer séparément) restent à confirmer par un premier test.
+  target:
+    entity:
+      domain: vacuum
+      integration: neatsvor_s600
+  fields:
+    room_ids:
+      name: Pièces
+      description: Liste des IDs de pièces à nettoyer (entiers).
+      required: true
+      example: [1, 2]
+      selector:
+        object:
+    fan_level:
+      name: Niveau d'aspiration
+      description: Supposé 1 (faible) à 3 (fort) — à confirmer.
+      required: true
+      default: 2
+      selector:
+        number:
+          min: 1
+          max: 3
+          mode: box
+    water_level:
+      name: Niveau de lavage
+      description: Supposé 1 (faible) à 3 (fort) — à confirmer.
+      required: true
+      default: 2
+      selector:
+        number:
+          min: 1
+          max: 3
+          mode: box
+    mode:
+      name: Mode
+      description: Signification exacte non confirmée, 1 par défaut.
+      required: false
+      default: 1
+      selector:
+        number:
+          min: 1
+          max: 5
+          mode: box

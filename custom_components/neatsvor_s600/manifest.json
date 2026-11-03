@@ -1,0 +1,13 @@
+{
+  "domain": "neatsvor_s600",
+  "name": "Neatsvor S600",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "",
+  "iot_class": "cloud_push",
+  "issue_tracker": "",
+  "requirements": [
+    "paho-mqtt>=2.0.0"
+  ],
+  "version": "0.2.0"
+}

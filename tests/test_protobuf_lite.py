@@ -1,0 +1,41 @@
+import importlib.util
+import pathlib
+import unittest
+
+MODULE = pathlib.Path(__file__).parents[1] / "custom_components" / "neatsvor_s600" / "protobuf_lite.py"
+SPEC = importlib.util.spec_from_file_location("protobuf_lite", MODULE)
+protobuf_lite = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(protobuf_lite)
+decode_fields = protobuf_lite.decode_fields
+first = protobuf_lite.first
+length_delimited_field = protobuf_lite.length_delimited_field
+packed_varint_field = protobuf_lite.packed_varint_field
+varint_field = protobuf_lite.varint_field
+
+
+class ProtobufLiteTests(unittest.TestCase):
+    def test_round_trip_supported_fields(self):
+        payload = varint_field(1, 300) + length_delimited_field(2, b"abc")
+        fields = decode_fields(payload)
+        self.assertEqual(first(fields, 1), 300)
+        self.assertEqual(first(fields, 2), b"abc")
+
+    def test_packed_varints(self):
+        fields = decode_fields(packed_varint_field(3, [1, 2, 300]))
+        self.assertEqual(first(fields, 3), bytes([1, 2, 0xAC, 0x02]))
+
+    def test_rejects_truncated_varint(self):
+        with self.assertRaises(ValueError):
+            decode_fields(b"\\x80")
+
+    def test_rejects_truncated_length_delimited(self):
+        with self.assertRaises(ValueError):
+            decode_fields(b"\\x0a\\x05x")
+
+    def test_rejects_invalid_field_zero(self):
+        with self.assertRaises(ValueError):
+            decode_fields(b"\\x00")
+
+
+if __name__ == "__main__":
+    unittest.main()
