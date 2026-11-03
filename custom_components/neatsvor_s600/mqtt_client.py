@@ -45,9 +45,15 @@ _MAX_DECOMPRESSED_PAYLOAD = 1_000_000
 class NeatsvorMqttClient:
     """Encapsule la connexion paho-mqtt vers le broker Neatsvor/JoyLife."""
 
-    def __init__(self, mac: str, on_update: Callable[[dict[str, Any]], None]) -> None:
+    def __init__(
+        self,
+        mac: str,
+        on_update: Callable[[dict[str, Any]], None],
+        on_connection: Callable[[bool], None] | None = None,
+    ) -> None:
         self._mac = mac
         self._on_update = on_update
+        self._on_connection = on_connection
         self._topic_state = f"STATE_{mac}"
         self._topic_online = f"DEVICE_ON_LINE_{mac}"
         self._topic_app = f"DP_APP_{mac}"
@@ -80,6 +86,10 @@ class NeatsvorMqttClient:
         self._client.disconnect()
         self._client.loop_stop()
 
+    def is_connected(self) -> bool:
+        """Indique si la session MQTT avec le broker cloud est établie."""
+        return bool(self._client.is_connected())
+
     # -- Callbacks paho ------------------------------------------------
     def _handle_connect(self, client, userdata, flags, reason_code, properties=None) -> None:
         if reason_code != 0:
@@ -90,12 +100,21 @@ class NeatsvorMqttClient:
                 self._mac,
                 reason_code,
             )
+            self._notify_connection(False)
             return
         _LOGGER.debug("Connecté au broker Neatsvor pour %s", self._mac)
         client.subscribe([(self._topic_state, 0), (self._topic_online, 0)])
+        self._notify_connection(True)
 
-    def _handle_disconnect(self, client, userdata, reason_code, properties=None) -> None:
+    def _handle_disconnect(
+        self, client, userdata, disconnect_flags, reason_code, properties=None
+    ) -> None:
         _LOGGER.warning("Déconnecté du broker Neatsvor pour %s (code %s)", self._mac, reason_code)
+        self._notify_connection(False)
+
+    def _notify_connection(self, connected: bool) -> None:
+        if self._on_connection is not None:
+            self._on_connection(connected)
 
     def _handle_message(self, client, userdata, msg) -> None:
         # Tout le traitement d'un message (décompression, parsing protobuf,
