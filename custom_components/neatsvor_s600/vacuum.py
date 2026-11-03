@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import voluptuous as vol
 from homeassistant.components.vacuum import (
     StateVacuumEntity,
     VacuumActivity,
@@ -13,7 +14,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback, async_get_current_platform
-import voluptuous as vol
 
 from .const import COMMAND_START_RESUME, COMMAND_STOP_RETURN, DOMAIN, STATUS_IDLE
 from .mqtt_client import NeatsvorMqttClient

@@ -16,8 +16,8 @@ exigée entre en conflit avec d'autres intégrations.
 from __future__ import annotations
 
 import gzip
-import zlib
 import logging
+import zlib
 from collections.abc import Callable
 from typing import Any
 
