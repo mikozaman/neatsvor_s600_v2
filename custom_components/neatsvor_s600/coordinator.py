@@ -128,34 +128,40 @@ class NeatsvorCoordinator(DataUpdateCoordinator[NeatsvorState]):
 
     # -- Commandes -----------------------------------------------------------
     async def async_start(self) -> None:
-        await self._async_send("send_command", COMMAND_START_RESUME)
-        self._remember_command(COMMAND_START_RESUME)
+        await self._async_command(COMMAND_START_RESUME, "send_command", COMMAND_START_RESUME)
 
     async def async_stop(self) -> None:
-        await self._async_send("send_command", COMMAND_STOP_RETURN)
-        self._remember_command(COMMAND_STOP_RETURN)
+        await self._async_command(COMMAND_STOP_RETURN, "send_command", COMMAND_STOP_RETURN)
 
     async def async_return_home(self) -> None:
-        await self._async_send("send_command", COMMAND_STOP_RETURN)
-        self._remember_command(COMMAND_STOP_RETURN)
+        await self._async_command(COMMAND_STOP_RETURN, "send_command", COMMAND_STOP_RETURN)
 
     async def async_clean_rooms(
         self, room_ids: list[int], fan_level: int, water_level: int, mode: int = 1
     ) -> None:
         """Service neatsvor_s600.clean_rooms — NON VALIDÉ sur le robot réel."""
-        await self._async_send("send_room_clean", room_ids, fan_level, water_level, mode)
-        self._remember_command(COMMAND_START_RESUME)
+        await self._async_command(
+            COMMAND_START_RESUME, "send_room_clean", room_ids, fan_level, water_level, mode
+        )
 
     def _remember_command(self, command: int) -> None:
         self.async_set_updated_data(replace(self.data, last_command=command))
 
-    async def _async_send(self, method_name: str, *args: Any) -> None:
-        """Exécute la publication MQTT bloquante hors de la boucle HA."""
+    async def _async_command(self, command: int, method_name: str, *args: Any) -> None:
+        """Envoie une commande ; la mémorise AVANT la publication.
+
+        Un message STATE peut arriver pendant la publication : il doit déjà
+        voir la nouvelle commande pour distinguer nettoyage et retour base.
+        Si l'envoi échoue, l'ancienne valeur est restaurée.
+        """
         if not self._client.is_connected():
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="not_connected")
+        previous = self.data.last_command
+        self._remember_command(command)
         try:
             await self.hass.async_add_executor_job(getattr(self._client, method_name), *args)
         except OSError as err:  # ConnectionError et TimeoutError en héritent
+            self._remember_command(previous)
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="command_failed"
             ) from err

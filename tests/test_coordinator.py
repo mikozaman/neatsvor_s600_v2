@@ -144,3 +144,13 @@ async def test_shutdown_survives_disconnect_error(coordinator, client_cls):
     client_cls.return_value.disconnect.side_effect = RuntimeError("boom")
     await coordinator.async_shutdown()
     client_cls.return_value.disconnect.assert_called_once_with()
+
+
+async def test_new_command_is_recorded_before_publish(coordinator, client_cls):
+    """A STATE message racing the publish must already see the new command."""
+    seen: list[int] = []
+    client_cls.return_value.send_command.side_effect = lambda code: seen.append(
+        coordinator.data.last_command
+    )
+    await coordinator.async_start()
+    assert seen == [COMMAND_START_RESUME]
