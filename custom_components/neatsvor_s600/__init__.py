@@ -3,19 +3,19 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client
 
 from .api import NeatsvorApiClient, NeatsvorApiError, NeatsvorAuthError
-from .const import CONF_EMAIL, CONF_TOKEN, DOMAIN
+from .const import CONF_EMAIL, CONF_TOKEN
+from .coordinator import NeatsvorConfigEntry, NeatsvorCoordinator, NeatsvorData
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["vacuum"]
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: NeatsvorConfigEntry) -> bool:
     session = aiohttp_client.async_get_clientsession(hass)
     api = NeatsvorApiClient(session)
 
@@ -36,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "indisponibles, le contrôle MQTT du robot reste fonctionnel",
                 entry.title,
             )
+            entry.async_start_reauth(hass)
         except NeatsvorApiError:
             _LOGGER.warning(
                 "Serveur JoyLife injoignable pour %s : pièces/cartes/voix "
@@ -53,14 +54,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             entry.title,
         )
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {"api": api}
+    coordinator = NeatsvorCoordinator(hass, entry)
+    entry.runtime_data = NeatsvorData(coordinator=coordinator, api=api)
 
+    await coordinator.async_connect()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unloaded:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
-    return unloaded
+async def async_unload_entry(hass: HomeAssistant, entry: NeatsvorConfigEntry) -> bool:
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

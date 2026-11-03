@@ -1,6 +1,8 @@
 """Shared fixtures for the Neatsvor S600 tests."""
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from custom_components.neatsvor_s600.const import DOMAIN
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -25,3 +27,20 @@ def mock_config_entry() -> MockConfigEntry:
         unique_id=MOCK_MAC,
         data={"mac": MOCK_MAC, "email": "user@example.com", "app_token": "tok"},
     )
+
+
+@pytest.fixture
+def client_cls():
+    """Patch the MQTT client used by the coordinator (connected by default)."""
+    with patch("custom_components.neatsvor_s600.coordinator.NeatsvorMqttClient") as cls:
+        cls.return_value.is_connected.return_value = True
+        yield cls
+
+
+@pytest.fixture
+def api_cls():
+    """Patch the REST client built in async_setup_entry."""
+    with patch("custom_components.neatsvor_s600.NeatsvorApiClient") as cls:
+        cls.return_value.login = AsyncMock(return_value="new-token")
+        cls.return_value.set_token = MagicMock()
+        yield cls

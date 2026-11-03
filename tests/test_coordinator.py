@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from unittest.mock import patch
 
 import pytest
 from custom_components.neatsvor_s600.const import COMMAND_START_RESUME, COMMAND_STOP_RETURN
@@ -43,13 +42,6 @@ def test_apply_update_online_only_keeps_activity():
     state = NeatsvorState(activity=VacuumActivity.CLEANING, battery=40, online=True)
     new = apply_update(state, {"online": False})
     assert (new.activity, new.battery, new.online) == (VacuumActivity.CLEANING, 40, False)
-
-
-@pytest.fixture
-def client_cls():
-    with patch("custom_components.neatsvor_s600.coordinator.NeatsvorMqttClient") as cls:
-        cls.return_value.is_connected.return_value = True
-        yield cls
 
 
 @pytest.fixture
