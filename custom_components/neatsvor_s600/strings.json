@@ -2,28 +2,69 @@
   "config": {
     "step": {
       "user": {
-        "title": "Ajouter un Neatsvor S600",
-        "description": "Adresse MAC du robot, au format {format}.",
+        "title": "Add a Neatsvor S600",
+        "description": "MAC address of the robot, in the format {format}.",
         "data": {
-          "mac": "Adresse MAC"
+          "mac": "MAC address"
         }
       },
       "account": {
-        "title": "Compte JoyLife",
-        "description": "E-mail du compte utilisé dans l'app JoyLife/Neatsvor (pas de mot de passe requis). Nécessaire pour récupérer les pièces, cartes et packs voix (le contrôle du robot, lui, n'en a pas besoin).",
+        "title": "JoyLife account",
+        "description": "Email of the account used in the JoyLife/Neatsvor app (no password needed). It is used to fetch rooms, maps and voice packs; robot control does not need it.",
         "data": {
-          "email": "E-mail"
+          "email": "Email"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in to JoyLife again",
+        "description": "The JoyLife server refused the stored account. Enter the email used in the JoyLife/Neatsvor app (no password needed). Robot control keeps working in the meantime.",
+        "data": {
+          "email": "Email"
         }
       }
     },
     "error": {
-      "invalid_mac": "Format d'adresse MAC invalide.",
-      "invalid_auth": "E-mail ou mot de passe refusé par le serveur JoyLife.",
-      "cannot_connect": "Impossible de joindre le serveur JoyLife.",
-      "invalid_email": "Adresse e-mail invalide."
+      "invalid_mac": "Invalid MAC address format.",
+      "invalid_auth": "Email refused by the JoyLife server.",
+      "cannot_connect": "Unable to reach the JoyLife server.",
+      "invalid_email": "Invalid email address."
     },
     "abort": {
-      "already_configured": "Ce robot est déjà configuré."
+      "already_configured": "This robot is already configured.",
+      "reauth_successful": "Account updated."
+    }
+  },
+  "exceptions": {
+    "not_connected": {
+      "message": "The robot cloud connection is unavailable. Try again in a moment."
+    },
+    "command_failed": {
+      "message": "The robot cloud did not accept the command in time."
+    }
+  },
+  "services": {
+    "clean_rooms": {
+      "name": "Clean rooms",
+      "description": "Starts a targeted cleaning of one or more rooms with suction and mopping levels. NOT VALIDATED ON A REAL ROBOT: the exact level range (1-3 assumed) and the real room IDs still need a first hardware test.",
+      "fields": {
+        "room_ids": {
+          "name": "Rooms",
+          "description": "List of room IDs to clean (integers).",
+          "example": "[1, 2]"
+        },
+        "fan_level": {
+          "name": "Suction level",
+          "description": "Assumed 1 (low) to 3 (high), to be confirmed."
+        },
+        "water_level": {
+          "name": "Mopping level",
+          "description": "Assumed 1 (low) to 3 (high), to be confirmed."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Exact meaning not confirmed, 1 by default."
+        }
+      }
     }
   }
 }

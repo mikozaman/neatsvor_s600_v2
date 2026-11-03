@@ -1,0 +1,70 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ajouter un Neatsvor S600",
+        "description": "Adresse MAC du robot, au format {format}.",
+        "data": {
+          "mac": "Adresse MAC"
+        }
+      },
+      "account": {
+        "title": "Compte JoyLife",
+        "description": "E-mail du compte utilisé dans l'app JoyLife/Neatsvor (pas de mot de passe requis). Nécessaire pour récupérer les pièces, cartes et packs voix (le contrôle du robot, lui, n'en a pas besoin).",
+        "data": {
+          "email": "E-mail"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Se reconnecter à JoyLife",
+        "description": "Le serveur JoyLife a refusé le compte enregistré. Saisissez l'e-mail utilisé dans l'app JoyLife/Neatsvor (pas de mot de passe requis). Le contrôle du robot continue de fonctionner entre-temps.",
+        "data": {
+          "email": "E-mail"
+        }
+      }
+    },
+    "error": {
+      "invalid_mac": "Format d'adresse MAC invalide.",
+      "invalid_auth": "E-mail refusé par le serveur JoyLife.",
+      "cannot_connect": "Impossible de joindre le serveur JoyLife.",
+      "invalid_email": "Adresse e-mail invalide."
+    },
+    "abort": {
+      "already_configured": "Ce robot est déjà configuré.",
+      "reauth_successful": "Compte mis à jour."
+    }
+  },
+  "exceptions": {
+    "not_connected": {
+      "message": "La connexion au cloud du robot est indisponible. Réessayez dans un instant."
+    },
+    "command_failed": {
+      "message": "Le cloud du robot n'a pas accepté la commande à temps."
+    }
+  },
+  "services": {
+    "clean_rooms": {
+      "name": "Nettoyer des pièces",
+      "description": "Lance un nettoyage ciblé sur une ou plusieurs pièces, avec niveaux d'aspiration et de lavage. NON VALIDÉ EN CONDITIONS RÉELLES : la plage exacte des niveaux (1-3 supposé) et les IDs de pièces réels restent à confirmer par un premier test.",
+      "fields": {
+        "room_ids": {
+          "name": "Pièces",
+          "description": "Liste des IDs de pièces à nettoyer (entiers).",
+          "example": "[1, 2]"
+        },
+        "fan_level": {
+          "name": "Niveau d'aspiration",
+          "description": "Supposé 1 (faible) à 3 (fort) — à confirmer."
+        },
+        "water_level": {
+          "name": "Niveau de lavage",
+          "description": "Supposé 1 (faible) à 3 (fort) — à confirmer."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "Signification exacte non confirmée, 1 par défaut."
+        }
+      }
+    }
+  }
+}
