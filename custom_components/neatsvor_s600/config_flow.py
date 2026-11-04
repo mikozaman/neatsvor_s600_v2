@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Mapping
 from typing import Any
 
 import voluptuous as vol
@@ -22,6 +23,15 @@ from .const import CONF_EMAIL, CONF_TOKEN, DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 _MAC_RE = re.compile(r"^([0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2}$")
+_EMAIL_RE = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
+
+
+def _normalise_email(value: str) -> str | None:
+    """Retourne l'e-mail nettoyé, ou None s'il est invalide."""
+    email = value.strip().lower()
+    if not email or len(email) > 254 or not _EMAIL_RE.fullmatch(email):
+        return None
+    return email
 
 
 class NeatsvorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -54,42 +64,68 @@ class NeatsvorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"format": "12-34-56-78-9A-BC"},
         )
 
+    async def _async_login(self, raw_email: str) -> tuple[str | None, str | None, str | None]:
+        """Valide l'e-mail puis tente le login SDK.
+
+        Retourne (email, token, clé d'erreur) ; la clé d'erreur est None en cas de succès.
+        """
+        email = _normalise_email(raw_email)
+        if email is None:
+            return None, None, "invalid_email"
+        api = NeatsvorApiClient(aiohttp_client.async_get_clientsession(self.hass))
+        try:
+            token = await api.login(email)
+        except NeatsvorAuthError as err:
+            _LOGGER.warning("Login JoyLife refusé : %s", err)
+            return email, None, "invalid_auth"
+        except NeatsvorApiError as err:
+            _LOGGER.warning("Échec de connexion à l'API JoyLife : %s", err, exc_info=True)
+            return email, None, "cannot_connect"
+        return email, token, None
+
     async def async_step_account(
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            session = aiohttp_client.async_get_clientsession(self.hass)
-            api = NeatsvorApiClient(session)
-            email = user_input[CONF_EMAIL].strip().lower()
-            if not email or len(email) > 254 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-                errors["base"] = "invalid_email"
-                return self.async_show_form(
-                    step_id="account",
-                    data_schema=vol.Schema({vol.Required(CONF_EMAIL): str}),
-                    errors=errors,
-                )
-            try:
-                token = await api.login(email)
-            except NeatsvorAuthError as err:
-                _LOGGER.warning("Login JoyLife refusé : %s", err)
-                errors["base"] = "invalid_auth"
-            except NeatsvorApiError as err:
-                _LOGGER.warning("Échec de connexion à l'API JoyLife : %s", err, exc_info=True)
-                errors["base"] = "cannot_connect"
-            else:
+            email, token, error = await self._async_login(user_input[CONF_EMAIL])
+            if error is None:
                 return self.async_create_entry(
                     title=f"Neatsvor S600 ({self._mac})",
-                    data={
-                        "mac": self._mac,
-                        CONF_EMAIL: email,
-                        CONF_TOKEN: token,
-                    },
+                    data={"mac": self._mac, CONF_EMAIL: email, CONF_TOKEN: token},
                 )
+            errors["base"] = error
 
         return self.async_show_form(
             step_id="account",
             data_schema=vol.Schema({vol.Required(CONF_EMAIL): str}),
+            errors=errors,
+        )
+
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> config_entries.ConfigFlowResult:
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        entry = self._get_reauth_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            email, token, error = await self._async_login(user_input[CONF_EMAIL])
+            if error is None:
+                return self.async_update_reload_and_abort(
+                    entry, data_updates={CONF_EMAIL: email, CONF_TOKEN: token}
+                )
+            errors["base"] = error
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema(
+                {vol.Required(CONF_EMAIL, default=entry.data.get(CONF_EMAIL, "")): str}
+            ),
             errors=errors,
         )

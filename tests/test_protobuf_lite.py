@@ -25,16 +25,24 @@ class ProtobufLiteTests(unittest.TestCase):
         self.assertEqual(first(fields, 3), bytes([1, 2, 0xAC, 0x02]))
 
     def test_rejects_truncated_varint(self):
-        with self.assertRaises(ValueError):
-            decode_fields(b"\\x80")
+        with self.assertRaisesRegex(ValueError, "Truncated protobuf varint"):
+            decode_fields(b"\x80")
 
     def test_rejects_truncated_length_delimited(self):
-        with self.assertRaises(ValueError):
-            decode_fields(b"\\x0a\\x05x")
+        with self.assertRaisesRegex(ValueError, "Truncated length-delimited"):
+            decode_fields(b"\x0a\x05x")
 
     def test_rejects_invalid_field_zero(self):
-        with self.assertRaises(ValueError):
-            decode_fields(b"\\x00")
+        with self.assertRaisesRegex(ValueError, "Invalid protobuf field number 0"):
+            decode_fields(b"\x00")
+
+    def test_rejects_unsupported_wire_type(self):
+        with self.assertRaisesRegex(ValueError, "Unsupported protobuf wire type: 3"):
+            decode_fields(b"\x0b")
+
+    def test_rejects_overlong_varint(self):
+        with self.assertRaisesRegex(ValueError, "exceeds 10 bytes"):
+            decode_fields(b"\x80" * 10 + b"\x01")
 
 
 if __name__ == "__main__":

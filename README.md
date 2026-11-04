@@ -13,12 +13,20 @@ Unofficial Home Assistant custom integration for the Neatsvor S600 / JoyLife pla
 ## Current functionality
 
 - Vacuum entity with start/resume, stop, and return-to-base commands.
-- Battery level and vendor online/offline state (when the cloud sends those updates).
+- Vendor online/offline state as an `online` attribute of the vacuum entity. The entity
+  stays available when the robot is reported offline.
+- Battery level is tracked internally and shown in the diagnostics download, but there is
+  **no battery entity yet**: Home Assistant deprecated battery attributes on vacuum entities,
+  and a proper battery sensor has not been added.
+- Re-authentication flow if the JoyLife account is refused, and a diagnostics download with
+  the MAC address, email and token redacted.
+- English and French translations.
 - Optional JoyLife account login for REST account data (rooms, maps, voice packs, devices).
 - `neatsvor_s600.clean_rooms` service for targeted cleaning. The wire format and
   level ranges remain **experimental and not validated on a physical robot**.
 - MQTT reconnect backoff, bounded gzip/protobuf parsing, input validation, and
-  non-blocking Home Assistant setup.
+  non-blocking Home Assistant setup. A command sent while the cloud connection is down
+  fails with a clear error instead of being silently lost.
 
 ## Installation
 
@@ -74,5 +82,7 @@ a physical S600; use at your own risk and do not assume these ranges match every
 
 ## Development
 
-Run the tests with `python -m unittest discover -s tests` in an environment with Python.
-Home Assistant integration tests additionally require Home Assistant's test dependencies.
+See [CONTRIBUTING.md](CONTRIBUTING.md). In short: `pip install -r requirements_test.txt`,
+then `ruff check .` and `pytest`. The suite needs no robot and no network.
+
+Requires Home Assistant 2025.1.0 or newer.

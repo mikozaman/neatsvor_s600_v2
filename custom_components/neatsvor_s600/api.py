@@ -11,7 +11,6 @@ que l'e-mail du compte et les constantes d'app (APP_KEY/APP_SECRET).
 """
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from typing import Any
@@ -147,7 +146,7 @@ class NeatsvorApiClient:
                     )
         except NeatsvorApiError:
             raise
-        except (aiohttp.ClientError, asyncio.TimeoutError, TimeoutError) as err:
+        except (aiohttp.ClientError, TimeoutError) as err:
             raise NeatsvorApiError(f"Erreur réseau sur {path}") from err
 
         try:
