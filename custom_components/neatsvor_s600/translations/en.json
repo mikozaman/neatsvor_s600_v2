@@ -1,0 +1,77 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a Neatsvor S600",
+        "description": "MAC address of the robot, in the format {format}.",
+        "data": {
+          "mac": "MAC address"
+        }
+      },
+      "account": {
+        "title": "JoyLife account",
+        "description": "Email of the account used in the JoyLife/Neatsvor app (no password needed). It is used to fetch rooms, maps and voice packs; robot control does not need it.",
+        "data": {
+          "email": "Email"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in to JoyLife again",
+        "description": "The JoyLife server refused the stored account. Enter the email used in the JoyLife/Neatsvor app (no password needed). Robot control keeps working in the meantime.",
+        "data": {
+          "email": "Email"
+        }
+      }
+    },
+    "error": {
+      "invalid_mac": "Invalid MAC address format.",
+      "invalid_auth": "Email refused by the JoyLife server.",
+      "cannot_connect": "Unable to reach the JoyLife server.",
+      "invalid_email": "Invalid email address."
+    },
+    "abort": {
+      "already_configured": "This robot is already configured.",
+      "reauth_successful": "Account updated."
+    }
+  },
+  "exceptions": {
+    "not_connected": {
+      "message": "The robot cloud connection is unavailable. Try again in a moment."
+    },
+    "command_failed": {
+      "message": "The robot cloud did not accept the command in time."
+    }
+  },
+  "services": {
+    "clean_rooms": {
+      "name": "Clean rooms",
+      "description": "Starts a targeted cleaning of one or more rooms. By default (-1) the robot applies the suction/mopping settings saved on the map for each room — this is the validated way. Explicit levels were not honoured by the robot in real tests.",
+      "fields": {
+        "room_ids": {
+          "name": "Rooms",
+          "description": "Room IDs to clean (integers). Names come from the map and appear in the rooms attribute of the map image.",
+          "example": "[1, 2]"
+        },
+        "fan_level": {
+          "name": "Suction level",
+          "description": "-1 = use the setting saved on the map (default). An explicit level (1-4) did not change the robot's behaviour in tests."
+        },
+        "water_level": {
+          "name": "Mopping level",
+          "description": "-1 = use the setting saved on the map (default)."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "-1 = use the app default (validated). Other values are unconfirmed."
+        }
+      }
+    }
+  },
+  "entity": {
+    "image": {
+      "map": {
+        "name": "Map"
+      }
+    }
+  }
+}
