@@ -1,0 +1,39 @@
+# Exemple de carte Lovelace (vue « Sections » ou « Masonry »).
+# Les noms de pièces sont ceux de VOTRE carte (attribut `rooms` de image.neatsvor_s600_map).
+# Chaque pièce a aussi son propre bouton « Nettoyer <pièce> » (entités button.neatsvor_s600_*).
+type: vertical-stack
+cards:
+  - type: picture-entity
+    entity: image.neatsvor_s600_map
+    show_name: false
+    show_state: false
+  - type: entities
+    entities:
+      - entity: vacuum.neatsvor_s600
+      - entity: sensor.neatsvor_s600_battery
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: Séjour
+        icon: mdi:sofa
+        tap_action:
+          action: perform-action
+          perform_action: neatsvor_s600.clean_rooms
+          target: { entity_id: vacuum.neatsvor_s600 }
+          data: { rooms: [Séjour] }   # niveaux par défaut = réglages de la carte
+      - type: button
+        name: Cuisine
+        icon: mdi:stove
+        tap_action:
+          action: perform-action
+          perform_action: neatsvor_s600.clean_rooms
+          target: { entity_id: vacuum.neatsvor_s600 }
+          data: { rooms: [Cuisine] }
+      - type: button
+        name: Séjour + Cuisine
+        icon: mdi:robot-vacuum
+        tap_action:
+          action: perform-action
+          perform_action: neatsvor_s600.clean_rooms
+          target: { entity_id: vacuum.neatsvor_s600 }
+          data: { rooms: [Séjour, Cuisine] }

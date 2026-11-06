@@ -1,0 +1,85 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ajouter un Neatsvor S600",
+        "description": "Adresse MAC du robot, au format {format}.",
+        "data": {
+          "mac": "Adresse MAC"
+        }
+      },
+      "account": {
+        "title": "Compte JoyLife",
+        "description": "E-mail du compte utilisé dans l'app JoyLife/Neatsvor (pas de mot de passe requis). Nécessaire pour récupérer les pièces, cartes et packs voix (le contrôle du robot, lui, n'en a pas besoin).",
+        "data": {
+          "email": "E-mail"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Se reconnecter à JoyLife",
+        "description": "Le serveur JoyLife a refusé le compte enregistré. Saisissez l'e-mail utilisé dans l'app JoyLife/Neatsvor (pas de mot de passe requis). Le contrôle du robot continue de fonctionner entre-temps.",
+        "data": {
+          "email": "E-mail"
+        }
+      }
+    },
+    "error": {
+      "invalid_mac": "Format d'adresse MAC invalide.",
+      "invalid_auth": "E-mail refusé par le serveur JoyLife.",
+      "cannot_connect": "Impossible de joindre le serveur JoyLife.",
+      "invalid_email": "Adresse e-mail invalide."
+    },
+    "abort": {
+      "already_configured": "Ce robot est déjà configuré.",
+      "reauth_successful": "Compte mis à jour."
+    }
+  },
+  "exceptions": {
+    "not_connected": {
+      "message": "La connexion au cloud du robot est indisponible. Réessayez dans un instant."
+    },
+    "command_failed": {
+      "message": "Le cloud du robot n'a pas accepté la commande à temps."
+    }
+  },
+  "services": {
+    "clean_rooms": {
+      "name": "Nettoyer des pièces",
+      "description": "Lance un nettoyage ciblé sur une ou plusieurs pièces. Par défaut (-1), le robot applique les réglages d'aspiration/lavage enregistrés sur la carte pour chaque pièce — c'est la méthode validée. Les niveaux explicites n'ont pas été pris en compte par le robot lors des tests réels.",
+      "fields": {
+        "room_ids": {
+          "name": "IDs des pièces",
+          "description": "IDs de pièces (entiers). Alternative à rooms."
+        },
+        "fan_level": {
+          "name": "Niveau d'aspiration",
+          "description": "-1 = utiliser le réglage enregistré sur la carte (défaut). Un niveau explicite (1-4) n'a pas modifié le comportement du robot lors des tests."
+        },
+        "water_level": {
+          "name": "Niveau de lavage",
+          "description": "-1 = utiliser le réglage enregistré sur la carte (défaut)."
+        },
+        "mode": {
+          "name": "Mode",
+          "description": "-1 = valeur par défaut de l'app (validé). Les autres valeurs ne sont pas confirmées."
+        },
+        "rooms": {
+          "name": "Pièces",
+          "description": "Noms de pièces (ex. Cuisine) et/ou identifiants, comme dans l'attribut rooms de la carte. Casse et accents ignorés ; un nom partiel unique suffit."
+        }
+      }
+    }
+  },
+  "entity": {
+    "image": {
+      "map": {
+        "name": "Carte"
+      }
+    },
+    "button": {
+      "clean_room": {
+        "name": "Nettoyer {room}"
+      }
+    }
+  }
+}
