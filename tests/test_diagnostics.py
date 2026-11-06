@@ -25,6 +25,9 @@ async def test_diagnostics_redacts_identifiers(
         "battery": 63,
         "online": None,
         "connected": False,
+        "map_rooms": 0,
+        "map_size": None,
+        "map_updated": None,
     }
     assert set(result["entry"]) == {"mac", "email", "app_token"}
     dumped = json.dumps(result)
