@@ -12,7 +12,7 @@ from .coordinator import NeatsvorConfigEntry, NeatsvorCoordinator, NeatsvorData
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["vacuum", "sensor", "image", "button"]
+PLATFORMS = ["vacuum", "sensor", "image", "button", "select"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: NeatsvorConfigEntry) -> bool:

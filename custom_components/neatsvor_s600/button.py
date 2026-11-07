@@ -24,6 +24,7 @@ async def async_setup_entry(
             known.update(new)
             async_add_entities(NeatsvorRoomCleanButton(coordinator, room_id) for room_id in new)
 
+    async_add_entities([NeatsvorStartSelectedButton(coordinator)])
     _add_new_rooms()
     entry.async_on_unload(coordinator.async_add_listener(_add_new_rooms))
 
@@ -43,3 +44,17 @@ class NeatsvorRoomCleanButton(NeatsvorEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         await self.coordinator.async_clean_rooms([self._room_id])
+
+
+class NeatsvorStartSelectedButton(NeatsvorEntity, ButtonEntity):
+    """Lance le nettoyage de la cible choisie dans la liste déroulante."""
+
+    _attr_translation_key = "start_selected"
+    _attr_icon = "mdi:play-circle"
+
+    def __init__(self, coordinator: NeatsvorCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"neatsvor_s600_{coordinator.mac}_start_selected"
+
+    async def async_press(self) -> None:
+        await self.coordinator.async_clean_selected()

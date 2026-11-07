@@ -98,6 +98,9 @@ class NeatsvorCoordinator(DataUpdateCoordinator[NeatsvorState]):
         self.data = NeatsvorState()
         self._closing = False
         self._outage_logged = False
+        # Cible choisie dans la liste déroulante : None = nettoyage global,
+        # sinon identifiant de la pièce.
+        self.clean_target: int | None = None
         self._client = NeatsvorMqttClient(self.mac, self._on_mqtt_update, self._on_mqtt_connection)
 
     # -- Cycle de vie ------------------------------------------------------
@@ -172,6 +175,14 @@ class NeatsvorCoordinator(DataUpdateCoordinator[NeatsvorState]):
         await self._async_command(
             COMMAND_START_RESUME, "send_room_clean", room_ids, fan_level, water_level, mode
         )
+
+    async def async_clean_selected(self) -> None:
+        """Lance la cible choisie : global (start) ou la pièce sélectionnée."""
+        target = self.clean_target
+        if target is None or target not in self.data.map_rooms:
+            await self.async_start()
+        else:
+            await self.async_clean_rooms([target])
 
     def resolve_rooms(self, items: list[int | str]) -> list[int]:
         """Noms et/ou identifiants de pièces -> identifiants, d'après la carte reçue."""

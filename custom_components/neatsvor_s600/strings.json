@@ -79,6 +79,14 @@
     "button": {
       "clean_room": {
         "name": "Clean {room}"
+      },
+      "start_selected": {
+        "name": "Start cleaning"
+      }
+    },
+    "select": {
+      "clean_target": {
+        "name": "Cleaning target"
       }
     }
   }

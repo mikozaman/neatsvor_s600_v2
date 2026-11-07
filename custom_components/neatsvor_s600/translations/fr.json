@@ -79,6 +79,14 @@
     "button": {
       "clean_room": {
         "name": "Nettoyer {room}"
+      },
+      "start_selected": {
+        "name": "Lancer le nettoyage"
+      }
+    },
+    "select": {
+      "clean_target": {
+        "name": "Cible de nettoyage"
       }
     }
   }
