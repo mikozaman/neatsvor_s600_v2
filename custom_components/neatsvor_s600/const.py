@@ -42,6 +42,7 @@ MODE_MAX = 5
 
 # Topic de la carte : sweeper.MapData publié en continu pendant le nettoyage.
 MAP_MIN_INTERVAL = 2.0  # secondes entre deux rendus PNG
+MAP_RENDER_SCALE = 3  # agrandissement entier de l'image (1 cellule = 3 px), robot/trajet tracés dessus
 
 # Backend REST du compte JoyLife (données de compte : pièces, cartes, packs voix)
 REST_BASE_URL = "https://de.wisdom.blackvision.net"

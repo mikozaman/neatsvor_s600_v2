@@ -27,6 +27,7 @@ import paho.mqtt.client as mqtt
 from .const import (
     CMD_ID_ROOMS,
     MAP_MIN_INTERVAL,
+    MAP_RENDER_SCALE,
     MQTT_HOST,
     MQTT_PASSWORD,
     MQTT_PORT,
@@ -192,7 +193,7 @@ class NeatsvorMqttClient:
         map_data = decode_map(raw)
         self._last_map_render = now
         return {
-            "map_png": render_png(map_data),
+            "map_png": render_png(map_data, scale=MAP_RENDER_SCALE, overlay=True),
             "map_rooms": map_data.rooms,
             "map_size": (map_data.width, map_data.height),
             "map_room_settings": map_data.room_settings,

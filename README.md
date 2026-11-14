@@ -18,8 +18,9 @@ Unofficial Home Assistant custom integration for the Neatsvor S600 / JoyLife pla
 - **Battery sensor** (`sensor.neatsvor_s600_battery`).
 - **Map image** (`image.neatsvor_s600_map`): the map published by the robot on its `MAP_<mac>` topic is
   decoded and rendered as a PNG (rooms coloured, walls dark); room names are exposed in the `rooms`
-  attribute (also on the vacuum entity). Robot position/path/zones are not decoded yet, and the
-  rendering has not been checked on a live Home Assistant instance.
+  attribute (also on the vacuum entity). The robot (with its heading), its cleaning path and the
+  dock are drawn on the map, which is enlarged 3x. Forbidden zones and virtual walls are not
+  drawn yet, and the rendering has not been checked on a live Home Assistant instance.
 - Re-authentication flow if the JoyLife account is refused, and a diagnostics download with
   the MAC address, email and token redacted.
 - English and French translations.
