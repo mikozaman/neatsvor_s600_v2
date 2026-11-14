@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+- Map: the robot (with its heading), its cleaning path and the dock are now drawn on the map image,
+  which is rendered 3x larger (`MAP_RENDER_SCALE`). The coordinates (robot, dock, path, zones) share
+  one frame with the pixel grid: x to the right, y downwards, `cell = coordinate / 10` (a cell is 5 cm),
+  validated against the JoyLife app.
+- `map_decoder`: `MapData.trail` (path segments, `(-1, -1)` separates segments), signed 64-bit values
+  (negative angles), `to_cell()`, `render_png(scale=, overlay=)`.
+
 ## 0.4.0
 - Map: `MAP_<mac>` subscription, protobuf decoder (`map_decoder.py`) and dependency-free PNG renderer,
   exposed as `image.neatsvor_s600_map` (rooms attribute); renders throttled to one per 2 s.

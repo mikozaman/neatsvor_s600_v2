@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import gzip
+import struct
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+from custom_components.neatsvor_s600.const import MAP_RENDER_SCALE
 from custom_components.neatsvor_s600.mqtt_client import NeatsvorMqttClient
 from custom_components.neatsvor_s600.protobuf_lite import (
     decode_fields,
@@ -129,7 +131,10 @@ def test_map_message_is_decoded_and_throttled(paho):
     paho.on_message(paho, None, msg)
     paho.on_message(paho, None, msg)  # trop rapproché : ignoré
     assert len(updates) == 1
-    assert updates[0]["map_png"].startswith(b"\x89PNG")
+    png = updates[0]["map_png"]
+    assert png.startswith(b"\x89PNG")
+    # Taille de la carte inchangée (en cellules) ; l'image PNG est agrandie de MAP_RENDER_SCALE.
+    assert struct.unpack(">II", png[16:24]) == (6 * MAP_RENDER_SCALE, 4 * MAP_RENDER_SCALE)
     assert updates[0]["map_rooms"] == {1: "Salon", 2: "Cuisine"}
     assert updates[0]["map_size"] == (6, 4)
 

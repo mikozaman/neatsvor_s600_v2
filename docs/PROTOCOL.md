@@ -57,10 +57,20 @@ Les entiers négatifs (int32) sont encodés en varint 10 octets (complément à 
 
 ### Carte `MAP_<mac>` **[V] (partiel)**
 `MqttMsg > Any(sweeper.MapData)` ; ~7,7 Ko gzip → ~177 Ko.
-- `MapData` : 1 = id de carte, 2 = largeur, 3 = hauteur, 4 = résolution (5), 5.2 = pixels (364×485), 5.5 = {x,y} (base ?), 6.2 = {x,y,angle} (robot ?), 6.4 = trajectoire, 9 = zones interdites {x1,y1,x2,y2}.
+- `MapData` : 1 = id de carte, 2 = largeur, 3 = hauteur, 4 = résolution (5, soit 5 cm par cellule), 5.2 = pixels (364×485), 5.5 = {x,y} (base), 6.2 = {x,y,angle} (robot), 6.3 = nombre de points du trajet (séparateurs inclus), 6.4 = trajet, 7 = zone du dernier nettoyage par zone (polygone), 9.1 = murs virtuels {x1,y1,x2,y2}, 9.3 = zone interdite au lavage (polygone).
   (type 1 sol, 2 mur, 0 vide).
 - `8.1` = pièces `{1: id, 2: nom}` ; `8.2` = réglages par pièce `{1: id, 2: fan_level, 3: water_level, 4: clean_times, 5: inconnu (=2)}` **[V]** (valeurs confirmées avec l'app : séjour fan 4, cuisine/SDB/douche clean_times 2, autres 3/3/1). `fan_level` va donc au moins jusqu'à 4. Pixel : `(room<<2)|type`, mur rattaché à sa pièce.
-- **Non décodés** : trajectoire, position du robot / base, zones. Utiliser `tools/mqtt_listen.py MAP`.
+- **Repère des coordonnées [V]** (validé le 13 nov 2026 en superposant une capture de l'app JoyLife) : un seul repère pour le
+  robot, la base, le trajet, les zones et les murs virtuels. x vers la droite, y vers le bas comme la grille, sans rotation
+  ni symétrie ; `cellule = coordonnée / 10`, origine (0, 0) (soit 5 cm par cellule, une unité ≈ 5 mm). Angle en degrés,
+  anti-horaire à l'écran : direction = (cos a, −sin a) (relevé sur quelques points, à confirmer sur un long trajet).
+  Les entiers négatifs (angle, `-1`) sont des varints 64 bits : à convertir en signé.
+- **Trajet [V] (partiel)** : `6.4` répété, `{1: type, 2: [{1: x, 2: y}, ...]}`. Polyligne simplifiée (sommets seulement) ;
+  le point `(-1, -1)` sépare les segments. Il n'est pas prolongé pendant le retour à la base : la position en direct
+  vient de `6.2`. La base (`5.5`) n'est fiable qu'une fois le robot posé dessus. Le trajet est vide quand le robot est au repos.
+- `STATE_<mac>` pendant ce nettoyage : `2.1` passe de 1 à 2 au départ, reste à 2 pendant le retour à la base et repasse à 1
+  une fois posé ; la charge se voit à la batterie (`2.2`) qui remonte.
+- **Non décodé** : détail des polygones `7` et `9.3` (affichage), signification du type `6.4.1`. Utiliser `tools/mqtt_listen.py MAP`.
 
 ## 2. REST (données de compte) — secondaire, partiellement bloqué
 
@@ -82,7 +92,7 @@ Base `https://de.wisdom.blackvision.net`. Succès = `code "10000"`. Header d'aut
 
 ## 4. Reste à faire
 1. Valider sur le vrai HA : entité image + capteur batterie + rendu de la carte (orientation éventuellement à corriger).
-2. Décoder trajectoire / position / zones dans `MAP_<mac>`.
+2. Dessiner les zones interdites (`9.3`) et les murs virtuels (`9.1`) sur la carte ; valider le trajet sur un nettoyage complet.
 3. Niveaux d'aspiration/lavage explicites (cmdId 9 ?), signification de `mode`.
 4. `ZoneClean` (32), zones interdites (46), packs voix (18).
 5. Authentification REST réelle (pièces/cartes/voix) si besoin.
